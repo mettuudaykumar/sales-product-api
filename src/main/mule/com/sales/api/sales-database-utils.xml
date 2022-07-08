@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+	<sub-flow name="sales-database-utils-queryall-Sub_Flow" doc:id="872e5052-8fe4-47d3-ae78-6399e5255d9a" >
+		<salesforce:query-all doc:id="164cd572-9a14-43a9-a3e1-6bd68eb76283" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[#[vars.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[vars.parameters]]]></salesforce:parameters>
+		</salesforce:query-all>
+	</sub-flow>
+	<sub-flow name="sales-database-utils-query-single-Sub_Flow" doc:id="bd8a584d-e448-4274-b3f0-f515e0ddbbc3" >
+		<salesforce:query doc:name="Query" doc:id="7cdc35ce-ce32-4f4a-a199-f33a296dcc4a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[#[vars.query]]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[vars.parameters]]]></salesforce:parameters>
+		</salesforce:query>
+	</sub-flow>
+	<sub-flow name="sales-database-utils-create-Sub_Flow" doc:id="508d70eb-05c7-4fa8-8382-bba2ab8c20df" >
+		<salesforce:create type="#[vars.sObjectType]" doc:name="Create" doc:id="da247ed9-aff5-4299-b41c-193ab713bc24" config-ref="Salesforce_Config"/>
+	</sub-flow>
+	<sub-flow name="sales-database-utils-upsert-Sub_Flow" doc:id="4d10e881-8ac6-42b7-aaf6-ee018d681128" >
+		<salesforce:upsert objectType="#[vars.sObjectType]" doc:name="Upsert" doc:id="55569f61-4d14-40e7-a556-8c9229e3cafc" config-ref="Salesforce_Config" externalIdFieldName="#[vars.externalId]"/>
+	</sub-flow>
+	<sub-flow name="sales-database-utils-update-Sub_Flow" doc:id="07c1fde1-908f-447a-bc48-9ce9830262cd" >
+		<salesforce:update doc:name="Update" doc:id="42fcc878-0ba4-479b-b69a-66c2d0d71939" config-ref="Salesforce_Config" type="#[vars.sObjectType]"/>
+	</sub-flow>
+	<sub-flow name="sales-database-utils-delete-Sub_Flow" doc:id="40874c5b-67f4-46ac-98c2-e473cba1e00e" >
+		<salesforce:delete doc:name="Delete" doc:id="e4dbc434-7851-49d0-8cea-20ed1eee42d8" config-ref="Salesforce_Config"/>
+	</sub-flow>
+</mule>

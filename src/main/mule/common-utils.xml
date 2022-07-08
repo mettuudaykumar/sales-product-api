@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="common-utils-pagination-Sub_Flow" doc:id="a4be6ac3-f1bc-4857-ae56-c94f0bafc19c" >
+		<ee:transform doc:name="preparePages" doc:id="95fc2915-7d24-43c3-8a89-5efb61b1301b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var totalRecords= vars.totalRecordCount
+var pageSize=vars.pageSize
+output application/json
+---
+
+(0 to floor(totalRecords/pageSize) ) map {
+
+    limit: pageSize,
+    offset: $$*pageSize
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

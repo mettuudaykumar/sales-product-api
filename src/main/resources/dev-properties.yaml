@@ -1,0 +1,26 @@
+product:
+  queryAll: "select * from account LIMIT 1000"
+  queryIds: "select account_id from account where account_id in (:ids)"
+  queryById: "select * from account where account_id=:id"
+  updateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested WHERE account_id=:id;"
+  insertStatement: "INSERT INTO account ( name, phone, salesforce_id,is_intrested) VALUES (:name, :phone, :salesforce_id,:is_intrested);"
+  bulkInsertStatement: "INSERT INTO account ( name, phone, salesforce_id,is_intrested) VALUES (:name, :phone, :salesforce_id,:is_intrested);"
+  bulkUpdateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested WHERE account_id=:id;"
+  deleteStatement: "UPDATE account SET IS_DELETED=True WHERE account_id=:id;"
+
+sales:
+  queryAll: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account LIMIT 1000"
+  queryById: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account where id=':id'"
+  countQuery: "select count() from Account where lastModifiedSystem__c!='I'"
+  pagableFullLoadQuery: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account where lastModifiedSystem__c!='I'  LIMIT :limit offset :offset"
+  updateStatement: ""
+  insertStatement: ""
+  deleteStatement: ""
+  pageSize: "10"
+jobInfo:
+  lastRunquery: "select max(batch_end_timestamp) as batch_end_timestamp  from job_info"
+  checkIdQuery: "select id from job_info where id=:id"
+  batchFrequency: "PT5M"
+  batchInfoCreateStatement: 
+  
+  

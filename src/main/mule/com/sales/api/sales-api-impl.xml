@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="sales-api-queryall-implSub_Flow" doc:id="ed070d4f-c111-4412-9068-b3e22eba1c90" >
+		<ee:transform doc:name="setQueryVars" doc:id="44ef8b27-f623-44a4-9ef7-f7eba9ee16bf" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::sales.queryAll")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-queryall-Sub_Flow" doc:id="e4840427-f777-4e46-9201-41199efa3fb0" name="sales-database-utils-queryall-Sub_Flow"/>
+		<ee:transform doc:name="output" doc:id="e4a0113e-e907-45a1-b787-95cad7a69b6d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="sales-api-query-by-id-implSub_Flow" doc:id="451e0ff1-3bc7-49d5-bd84-99c5e7eeb36f" >
+		<ee:transform doc:name="setQueryVars" doc:id="f3c03011-97fb-4d4f-895e-70a1816e6255" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::sales.queryById")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	id: vars.id
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-query-single-Sub_Flow" doc:id="fa0a9b95-1023-4947-890f-ff7131074cdb" name="sales-database-utils-query-single-Sub_Flow"/>
+		<ee:transform doc:name="output" doc:id="8e7da031-d58a-4cd5-a3de-484a120c0669" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="sales-api-create-implSub_Flow" doc:id="d6f80070-21ad-4bbf-b43d-89abd6e91b09" >
+		<ee:transform doc:name="setQueryVars" doc:id="357c1780-0af4-40a6-8180-e253810313bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+
+        "Phone": payload.phone,
+        "name": payload.name,
+        "isIntrested__c": payload.isIntrested default false
+    }]]]></ee:set-payload>
+
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sObjectType" ><![CDATA[%dw 2.0
+output application/java
+---
+"Account"]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-create-Sub_Flow" doc:id="c4364ee9-8b78-4d84-b453-a187070032f2" name="sales-database-utils-create-Sub_Flow"/>
+		<ee:transform doc:name="output" doc:id="549b4a86-15c0-4d60-9d17-ab1900f1743f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="9c48fbca-b65c-4475-9c40-c37c71a0e5e4" >
+			<when expression="payload.items[0].successful">
+				<ee:transform doc:name="output" doc:id="c38615fd-96dd-419a-8583-9cce5e9bc135" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.items[0].id,
+	message: "Account created"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+		</choice>
+	
+</sub-flow>
+<sub-flow name="sales-api-update-implSub_Flow" doc:id="fe986ab5-e5f4-49c8-905d-02469ac6d3f6" >
+		<ee:transform doc:name="setQueryVars" doc:id="0c7990b1-ed9f-41ee-bcdb-499efc64045d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+
+        "Phone": payload.phone,
+        "name": payload.name,
+        "isIntrested__c": payload.isIntrested default false,
+        id: vars.id,
+        productAccountId__c: null
+    }]]]></ee:set-payload>
+
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sObjectType" ><![CDATA[%dw 2.0
+output application/java
+---
+"Account"]]></ee:set-variable>
+				<ee:set-variable variableName="externalId" ><![CDATA[%dw 2.0
+output application/java
+---
+"productAccountId__c"]]></ee:set-variable>
+			
+
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-update-Sub_Flow" doc:id="2471dbec-a9de-4dc9-8834-288cc722a481" name="sales-database-utils-update-Sub_Flow"/>
+		<ee:transform doc:name="output" doc:id="5af63f4f-f2bb-49c8-a6e7-36bd0bf48821" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="825b2cb1-fb62-445a-84fd-5ef4f2f0e04d" >
+			<when expression="payload.items[0].successful">
+				<ee:transform doc:name="output" doc:id="938055f2-9545-41df-9f42-cef7b0441eb5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.items[0].id,
+	message: "Account updated"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+		</choice>
+	
+</sub-flow>
+	<sub-flow name="sales-api-delete-implSub_Flow" doc:id="858721d8-2cc0-4d31-8d5e-f137c8865263" >
+		<ee:transform doc:name="Transform Message" doc:id="4c74b8d2-7b3d-4210-87e9-193eaae58150" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[vars.id]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-delete-Sub_Flow" doc:id="0ec7bdaf-c380-4949-a19e-11861913ed76" name="sales-database-utils-delete-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="1d94f01f-3333-49d3-8121-755655a1be03" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

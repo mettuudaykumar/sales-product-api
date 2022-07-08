@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="product-api-query-all-implSub_Flow" doc:id="1e7306de-82cf-4018-a5e6-5ad071191295" >
+		<ee:transform doc:name="prepareQuery" doc:id="9b091751-53cd-4e90-810a-2b8583eaf5b5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.queryAll")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="779a266f-b19e-4b9f-bc00-7053c24130c8" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="prepareOut" doc:id="17d6bcb3-d628-4ff9-8080-3ce690154d3c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	
+		<sub-flow name="product-api-query-single-implSub_Flow" doc:id="a4bc76bf-0517-4b77-9c44-8847b34c3905" >
+		<ee:transform doc:name="prepareQuery" doc:id="70f3b45d-ea32-4625-b0a0-8e650b3a22d2" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.queryById")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{id: attributes.uriParams.id}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="4bc2b0af-9184-448f-b774-31151dfa3829" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="prepareOut" doc:id="384b8042-50c8-42ea-a64e-0bdc3d855ee2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter (not $.IS_DELETED)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="product-api-create-implSub_Flow" doc:id="c5535716-44da-4d18-90d3-848989f63256" >
+		<ee:transform doc:name="prepareQuery" doc:id="7251dd03-c220-41c9-9bdb-80eecbeaa41d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.insertStatement")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	name : payload.name, 
+	phone : payload.phone, 
+	salesforce_id:null,
+	is_intrested: payload.isIntrested default false
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-create-Sub_Flow" doc:id="9fea5424-b8b7-457d-944f-d80f68422dfd" name="product-database-utils-create-Sub_Flow"/>
+		<choice doc:name="Choice" doc:id="2e9a83ea-8862-4933-b544-453a7c6627b5" >
+			<when expression="#[payload.affectedRows&gt;0]">
+				<ee:transform doc:name="prepareOut" doc:id="14677496-fbd3-4948-b39f-2d9d33be73ec">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+---
+{
+id:payload.generatedKeys.ACCOUNT_ID,
+
+message: "record Inserted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise DB_CUSTOM:INSERT_FAILED" doc:id="dcaa68f8-6f23-49ac-a600-bda4bcc7a78c" type="DB_CUSTOM:INSERT_FAILED" description="NO RECORDS ARE INSERTED"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="product-api-update-implSub_Flow" doc:id="0c3ae636-8e7a-465c-9c8c-576250781b06" >
+		<ee:transform doc:name="prepareQuery" doc:id="1ff43861-d451-4680-a6d5-6a4c60817d90" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.updateStatement")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	name : payload.name, 
+	phone : payload.phone, 
+	salesforce_id:null,
+	is_intrested: payload.isIntrested default false,
+	id: vars.id
+}]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-update-Sub_Flow" doc:id="36160772-9b9f-4abd-9d90-82d1d5a64cdf" name="product-database-utils-update-Sub_Flow"/>
+		<choice doc:name="Choice" doc:id="14133735-07a0-469a-96b7-9f223db4cadd" >
+			<when expression="#[(payload[0] default 0)&gt;0]">
+				<ee:transform doc:name="prepareOut" doc:id="db7a46d2-7417-4e1e-9885-1f0d8f1ef0f5">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+---
+{
+id:vars.id,
+
+message: "record Updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise DB_CUSTOM:UPDATE_FAILED" doc:id="6eaa420a-19d2-444c-8682-b4ade14ad2df" type="DB_CUSTOM:UPDATE_FAILED" description="NO RECORDS ARE UPDATED"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="product-api-delete-implSub_Flow" doc:id="98ef9415-b964-4265-8d73-6be91543f346" >
+		<ee:transform doc:name="prepareQuery" doc:id="651f7f35-71fc-41a5-ae44-8829329b94b5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.deleteStatement")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	id: vars.id
+}]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-update-Sub_Flow" doc:id="822eb82f-28a6-4e5a-b7d2-20e04488bc12" name="product-database-utils-update-Sub_Flow"/>
+		<choice doc:name="Choice" doc:id="1779cae6-43bd-4707-b413-341b8d6b207a" >
+			<when expression="#[(payload[0] default 0)&gt;0]">
+				<ee:transform doc:name="prepareOut" doc:id="43495306-ff6c-4a3c-9629-628bdaafc8d0">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+---
+{
+id:vars.id,
+
+message: "record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise DB_CUSTOM:DELETE_FAILED" doc:id="0b391bb4-eeaf-4aa6-b460-7b8bea224aba" type="DB_CUSTOM:DELETE_FAILED" description="NO RECORDS ARE DELETE"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>
