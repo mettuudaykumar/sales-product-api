@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<db:config name="Database_Config" doc:name="Database Config"
 		doc:id="e25d3696-d3e0-496a-a70a-89d020e5d83b">
 		<db:generic-connection
-			url="jdbc:h2:file:C:\Users\Siva Namratha\OneDrive\Desktop\h2\h2;MODE=MYSQL"
+			url="jdbc:h2:file:C:\Users\Siva Namratha\OneDrive\Desktop\h2\h21;MODE=MYSQL;AUTO_SERVER=TRUE"
 			driverClassName="org.h2.Driver" />
 	</db:config>
 	 <http:listener-config name="sales-products-sapi-httpListenerConfig">

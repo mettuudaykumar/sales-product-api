@@ -12,11 +12,14 @@ var totalRecords= vars.totalRecordCount
 var pageSize=vars.pageSize
 output application/json
 ---
-
+if(totalRecords==0)
+([])
+else
 (0 to floor(totalRecords/pageSize) ) map {
 
     limit: pageSize,
-    offset: $$*pageSize
+    //offset: $$*pageSize
+    offset: 0
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

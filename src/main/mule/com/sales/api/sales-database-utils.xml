@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	
 	<sub-flow name="sales-database-utils-queryall-Sub_Flow" doc:id="872e5052-8fe4-47d3-ae78-6399e5255d9a" >
 		<salesforce:query-all doc:id="164cd572-9a14-43a9-a3e1-6bd68eb76283" config-ref="Salesforce_Config">
@@ -29,4 +31,49 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<sub-flow name="sales-database-utils-delete-Sub_Flow" doc:id="40874c5b-67f4-46ac-98c2-e473cba1e00e" >
 		<salesforce:delete doc:name="Delete" doc:id="e4dbc434-7851-49d0-8cea-20ed1eee42d8" config-ref="Salesforce_Config"/>
 	</sub-flow>
+	<flow name="sales-database-utilsFlow" doc:id="bdb0284a-3209-47cd-9685-5cc998e9ac2a" >
+		<http:listener doc:name="Listener" doc:id="654ed7d3-fad6-4314-9fb4-987b07038e5c" config-ref="sales-products-sapi-httpListenerConfig" path="/setup-sales"/>
+		<ee:transform doc:name="Transform Message" doc:id="28538cbf-8d86-4346-9071-a39070e08a76" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+"select id from Account "]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-query-single-Sub_Flow" doc:id="8402590d-203e-4a01-8bed-43deed13bfc8" name="sales-database-utils-query-single-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="0de83a5f-1529-47df-a27a-b97032659077" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map (
+	
+	{Id: $.Id,
+	"lastModifiedSystem__c": "E",
+	"productAccountId__c": null
+	 }
+)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sObjectType" ><![CDATA[%dw 2.0
+output application/java
+---
+"Account"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-update-Sub_Flow" doc:id="b581316e-fb81-4c86-9844-d7102df07106" name="sales-database-utils-update-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="f3c474db-f206-4e4d-8318-4883751660f7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "sf records successfully reset for consumption"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 </mule>

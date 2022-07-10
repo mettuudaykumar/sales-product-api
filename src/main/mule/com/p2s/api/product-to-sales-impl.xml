@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="product-to-sales-implFlow" doc:id="00064b97-b096-4e78-9f29-1b6c6b718ae8" >
+		<scheduler doc:name="Scheduler" doc:id="a96164d2-6e2f-455d-9faa-7dff2f29e33a" >
+			<scheduling-strategy >
+				<fixed-frequency startDelay="2" timeUnit="MINUTES" frequency="2"/>
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="product-to-sales-fetch-lastrun-timestamp-implSub_Flow" doc:id="ad5c10a9-a825-40c0-84d9-9962f57b1035" name="product-to-sales-fetch-lastrun-timestamp-implSub_Flow" target="currentRunTimestamp" targetValue="#[payload[0].BATCH_END_TIMESTAMP]"/>
+		<ee:transform doc:name="setCurntRunTIme" doc:id="cbdbdd1b-fac7-4c19-a318-c3b3ff551d3a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="currentRunTimestamp" ><![CDATA[%dw 2.0
+output application/json
+---
+(((vars.currentRunTimestamp as DateTime) ++ ('IST' as TimeZone)) default now()) // as DateTime {"format": "yyyy-MM-dd'T'HH:mm:ss.SS"}]]></ee:set-variable>
+				<ee:set-variable variableName="isFullLoad" ><![CDATA[%dw 2.0
+output application/java
+---
+if(vars.currentRunTimestamp== null) true else false]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="54c9cc36-3964-480d-af0e-b20aca224272" >
+			<when expression="#[vars.isFullLoad]">
+				<ee:transform doc:name="setCurrentBatchInfo" doc:id="14a76677-194a-44f7-8120-30ea6fc84665">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="currentBatchJobInfo"><![CDATA[%dw 2.0
+var batchEndTime= vars.currentRunTimestamp
+var route= "p2s"
+
+output application/java
+---
+{
+	trace_id: correlationId,
+	route: route,
+	error_message: null,
+	batch_start_timestamp: vars.currentRunTimestamp  - |P100Y|, //as String {"format": "yyyy-MM-dd HH:mm:ss"}, 
+	batch_end_timestamp: vars.currentRunTimestamp ,//as String {"format": "yyyy-MM-dd HH:mm:ss"},
+	job_id: route ++ ((vars.currentRunTimestamp - |P100Y|)as String) ++ (batchEndTime as String)
+	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="queryPrep" doc:id="1fb23479-1411-4c5d-8ca5-33f87d0c5e9f" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="countQuery" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.countQuery")]]></ee:set-variable>
+						<ee:set-variable variableName="productQuery" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.pagableQuery")]]></ee:set-variable>
+					
+</ee:variables>
+				</ee:transform>
+			
+</when>
+			<otherwise >
+				<ee:transform doc:name="setCurrentBatchInfo" doc:id="3e9205c4-eaf8-44a5-9f9c-cd786159f079">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="currentBatchJobInfo" ><![CDATA[%dw 2.0
+var batchEndTime= (vars.currentRunTimestamp + (p("secure::jobInfo.batchFrequency") as Period))
+var route= "p2s"
+output application/java
+---
+{
+	trace_id: correlationId,
+	route: route,
+	error_message: null,
+	batch_start_timestamp: vars.currentRunTimestamp, //as String {"format": "yyyy-MM-dd HH:mm:ss"}, 
+	batch_end_timestamp: batchEndTime ,//as String {"format": "yyyy-MM-dd HH:mm:ss"},
+	job_id:  route ++ (vars.currentRunTimestamp as String) ++ (batchEndTime as String)
+	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="queryPrep" doc:id="a098a290-e80d-4eed-aa33-174d81751b8d" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="countQuery" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.countQuery") ++ "  and MODIFIED_AT > '$(vars.currentBatchJobInfo.batch_start_timestamp)' and MODIFIED_AT <= '$(vars.currentBatchJobInfo.batch_end_timestamp)'"]]></ee:set-variable>
+						<ee:set-variable variableName="productQuery" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::product.pagableQuery")]]></ee:set-variable>
+					
+</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="product-to-sales-query-count-implSub_Flow" doc:id="ed5e8c34-6b1c-44a5-a78b-06d18c89c351" name="product-to-sales-query-count-implSub_Flow" target="totalRecordCount" targetValue="#[payload[0].RECORD_COUNT]"/>
+		<set-variable value='#[p("secure::sales.pageSize") as Number]' doc:name="SetPageSize" doc:id="d41d63b7-6836-4d19-aff4-cc6e8de1a471" variableName="pageSize"/>
+		<flow-ref doc:name="common-utils-pagination-Sub_Flow" doc:id="cbc0ed9f-e47d-4e8e-8c21-07650a711f5e" name="common-utils-pagination-Sub_Flow" target="pages"/>
+		<foreach doc:name="For Each" doc:id="650109dd-641a-4e35-8931-3d4bbaeb58fa" collection="#[vars.pages]">
+			<flow-ref doc:name="product-to-sales-query-product-accounts-paginated-implSub_Flow" doc:id="4a529c6f-897c-4de3-aeed-372ab9eeada0" name="product-to-sales-query-product-accounts-paginated-implSub_Flow" target="productRecords"/>
+			<set-variable value="#[vars.productRecords.SALESFORCE_ID filter ($ != null)]" doc:name="Set SfAccountIds" doc:id="4a308d0b-0902-49a0-8f68-a1dbe1979080" variableName="ids"/>
+			<ee:transform doc:name="prepareSfPayload" doc:id="e67fcf82-55af-4dc7-a56b-df21de964307" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="productSfRequest" ><![CDATA[%dw 2.0
+
+output application/java
+---
+
+vars.productRecords map ({
+					Name : $.NAME, 
+					Phone : $.PHONE, 
+					productAccountId__c: $.ACCOUNT_ID as String,
+					lastModifiedSystem__c: "I",
+					isIntrested__c: $.IS_INTRESTED default false
+				})]]></ee:set-variable>
+				
+</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="product-to-sales-upsert-records-salesforce-implSub_Flow" doc:id="9360b2cd-7607-4811-9e1f-a02e60acf930" name="product-to-sales-upsert-records-salesforce-implSub_Flow"/>
+			<set-variable value="#[%dw 2.0
+output application/json
+---
+(payload.items filter ((item, index) -&gt; item.payload.created == true)).id]" doc:name="Set sfCreatedIds" doc:id="f2c05086-c572-4b7c-85d2-586ba8ab30d9" variableName="sfCreatedIds"/>
+			<choice doc:name="Choice" doc:id="92bf9f64-a3a9-4b15-b652-d8d79a664313" >
+				<when expression="#[not isEmpty(vars.sfCreatedIds)]">
+					<flow-ref doc:name="product-to-sales-query-sfrecordsById-implSub_Flow" doc:id="9841abe7-13ef-4ae8-8f4e-016d66f53b6f" name="product-to-sales-query-sfrecordsById-implSub_Flow"/>
+					<ee:transform doc:name="prepareDbPayload" doc:id="5c6856b4-8713-48e1-ba47-96995819c100">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map (
+	{
+		ACCOUNT_ID: $.productAccountId__c as Number,
+		SALESFORCE_ID: $.Id,
+		LAST_MODIFIED_SYSTEM: "I"
+	}
+)]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+					<flow-ref doc:name="product-to-sales-update-product-account-with-salesforceIds-implSub_Flow" doc:id="adb57933-919c-4205-958d-93ea27d7060f" name="product-to-sales-update-product-account-with-salesforceIds-implSub_Flow"/>
+				</when>
+			</choice>
+		
+</foreach>
+		<set-variable value="#[vars.currentBatchJobInfo ++ {is_success : true}]" doc:name="Set currentBatchJobInfo" doc:id="bf650690-f58e-4adc-a909-f80944a6e76d" variableName="currentBatchJobInfo"/>
+		<flow-ref doc:name="sales-to-database-job-info-upsert-implSub_Flow" doc:id="9932ab13-05b2-4595-a14e-2f1424c5578c" name="sales-to-database-job-info-upsert-implSub_Flow"/>
+	
+	</flow>
+	<sub-flow name="product-to-sales-update-product-account-with-salesforceIds-implSub_Flow" doc:id="8f89bf01-71f9-4597-aba5-1fa3b0695148" >
+		<ee:transform doc:name="prepareQuery" doc:id="de59ba13-d17d-4f17-8981-e10536bc6b51" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+"UPDATE ACCOUNT SET SALESFORCE_ID=:SALESFORCE_ID,LAST_MODIFIED_SYSTEM=:LAST_MODIFIED_SYSTEM WHERE ACCOUNT_ID=:ACCOUNT_ID;"]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-update-Sub_Flow" doc:id="20931616-e541-4db5-b709-8033c312bb09" name="product-database-utils-update-Sub_Flow"/>
+		<choice doc:name="Choice" doc:id="1fdc10fc-e7c1-47de-8a48-4746ff7622f6" >
+			<when expression="#[(payload[0] default 0)&gt;0]">
+				<ee:transform doc:name="prepareOut" doc:id="6801ebd5-bcd7-419a-aaa3-4a2d99e75dd1">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise DB_CUSTOM:UPDATE_FAILED" doc:id="ea6b07ec-7844-4c58-b6e6-e922507e9367" type="DB_CUSTOM:UPDATE_FAILED" description="NO RECORDS ARE UPDATED"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="product-to-sales-upsert-records-salesforce-implSub_Flow" doc:id="b1f0efe5-42fb-4a3a-85e2-8a026741e14a" >
+		<ee:transform doc:name="prepUpsert" doc:id="de9b27cb-65ab-4893-b6e8-5260a403991d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+vars.productSfRequest]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sObjectType" ><![CDATA[%dw 2.0
+output application/java
+---
+"Account"]]></ee:set-variable>
+				<ee:set-variable variableName="externalId" ><![CDATA[%dw 2.0
+output application/java
+---
+"productAccountId__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-upsert-Sub_Flow" doc:id="1824bbd0-9292-4ca3-9374-0c0d3d091d29" name="sales-database-utils-upsert-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="197f6e31-7101-405d-817c-337ce6164cf7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="931f64ac-f7c4-45b2-beee-9e01fc7c517d" >
+			<when expression="#[payload.successful]">
+				<ee:transform doc:name="output" doc:id="13831edb-b26f-447f-abd2-bf3c894243d4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise CUSTOM_SALESFORCE:RECORD_NOTUPDATED" doc:id="ed27debe-679d-46bf-9868-32448b1b513d" type="CUSTOM_SALESFORCE:RECORD_NOTUPDATED" description="error while updating or creating  the record"/>
+			</otherwise>
+		
+</choice>
+	</sub-flow>
+	<sub-flow name="product-to-sales-query-sfrecordsById-implSub_Flow" doc:id="0e1ce5f2-6744-42b6-a390-dee5d22a213f" >
+		<ee:transform doc:name="prepQuery" doc:id="28404ebd-6a28-4bbc-bc9b-80c2ad88725a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+var sfIds= vars.sfCreatedIds joinBy "','"
+output application/java
+---
+"select Id, productAccountId__c from Account where Id in ('$(sfIds)') "]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="sales-database-utils-query-single-Sub_Flow" doc:id="c016af4f-1dce-4615-8ef9-58cd77346efa" name="sales-database-utils-query-single-Sub_Flow"/>
+	</sub-flow>
+	<sub-flow name="product-to-sales-query-product-accounts-paginated-implSub_Flow" doc:id="743ef030-13f9-4f53-bbcc-5e62c4bd77a8" >
+		<ee:transform doc:name="prepareQuery" doc:id="5e9b34d0-467b-4eb7-bf74-762dbdcf5446" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.productQuery]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	limit: payload.limit,
+	offset: payload.offset,
+	(batch_start_timestamp: vars.currentBatchJobInfo.batch_start_timestamp) ,
+	(batch_end_timestamp:  vars.currentBatchJobInfo.batch_end_timestamp) 
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="4491f55f-4681-4c30-8653-6736a0b15993" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="prepareOut" doc:id="dbe2e711-f5c9-4d9c-963a-97530cd1f574" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="product-to-sales-query-count-implSub_Flow" doc:id="a5bf838b-9e6f-448d-a03e-f8d0fdf52bf9" >
+		<ee:transform doc:name="prepareQuery" doc:id="17631695-d9e3-412d-afc9-51eea17fb272" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.countQuery]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="bb245484-68cc-43fc-ae83-9a763379f812" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="prepareOut" doc:id="74354f6f-fbd5-4a96-b1c3-3de16b2482bc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="product-to-sales-fetch-lastrun-timestamp-implSub_Flow" doc:id="1b01235f-9c99-44b5-b7a8-eccd2d341925" >
+		<ee:transform doc:name="prepareQuery" doc:id="52526001-19f2-4cca-a109-e0d26f98c0cf" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::jobInfo.p2s.lastRunquery")]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="1c185022-d6c0-429b-b1b6-0e977bf46c76" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="prepareOut" doc:id="48cf8336-2621-4db9-9ae3-528673070aac" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

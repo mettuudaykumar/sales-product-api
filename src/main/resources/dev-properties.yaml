@@ -1,26 +1,35 @@
+jobInfo:
+  s2p:
+    lastRunquery: "select max(batch_end_timestamp) as batch_end_timestamp  from JOB_INFO where route='s2p'"
+    checkIdQuery: "select job_id from job_info where job_id=:job_id and route='s2p'"
+  p2s:
+    lastRunquery: "select max(batch_end_timestamp) as batch_end_timestamp  from JOB_INFO where route='p2s'"
+    checkIdQuery: "select job_id from job_info where job_id=:job_id and route='p2s'"
+  batchFrequency: "PT2M"  
+  batchInfoCreateStatement: "INSERT INTO JOB_INFO ( job_id, trace_id, route,error_message,is_success,batch_start_timestamp,batch_end_timestamp) VALUES (:job_id, :trace_id,:route ,:error_message,:is_success,:batch_start_timestamp,:batch_end_timestamp);"
+  batchInfoUpdateStatement: "UPDATE JOB_INFO SET  trace_id=:trace_id, route=:route,error_message=:error_message,is_success=:is_success,batch_start_timestamp=:batch_start_timestamp,batch_end_timestamp=:batch_end_timestamp WHERE job_id=:job_id;"
+  
+    
 product:
   queryAll: "select * from account LIMIT 1000"
   queryIds: "select account_id from account where account_id in (:ids)"
+  countQuery: "select count(account_id) as RECORD_COUNT from Account where LAST_MODIFIED_SYSTEM!='I'"
   queryById: "select * from account where account_id=:id"
-  updateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested WHERE account_id=:id;"
+  queryBySfIds: "SELECT * FROM ACCOUNT WHERE SALESFORCE_ID IN (:salesforce_ids);" 
+  updateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested,LAST_MODIFIED_SYSTEM=:LAST_MODIFIED_SYSTEM WHERE account_id=:id;"
   insertStatement: "INSERT INTO account ( name, phone, salesforce_id,is_intrested) VALUES (:name, :phone, :salesforce_id,:is_intrested);"
-  bulkInsertStatement: "INSERT INTO account ( name, phone, salesforce_id,is_intrested) VALUES (:name, :phone, :salesforce_id,:is_intrested);"
-  bulkUpdateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested WHERE account_id=:id;"
+  bulkInsertStatement: "INSERT INTO account ( name, phone, salesforce_id,is_intrested,LAST_MODIFIED_SYSTEM) VALUES (:name, :phone, :salesforce_id,:is_intrested,:lastModifiedSystem);"
+  bulkUpdateStatement: "UPDATE account SET name=:name, phone=:phone, salesforce_id=:salesforce_id,is_intrested=:is_intrested,LAST_MODIFIED_SYSTEM=:lastModifiedSystem WHERE account_id=:id;"
   deleteStatement: "UPDATE account SET IS_DELETED=True WHERE account_id=:id;"
+  pagableQuery: "SELECT * FROM ACCOUNT where LAST_MODIFIED_SYSTEM!='I' and MODIFIED_AT > :batch_start_timestamp and MODIFIED_AT <= :batch_end_timestamp  LIMIT :limit offset :offset"
 
 sales:
   queryAll: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account LIMIT 1000"
   queryById: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account where id=':id'"
   countQuery: "select count() from Account where lastModifiedSystem__c!='I'"
   pagableFullLoadQuery: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account where lastModifiedSystem__c!='I'  LIMIT :limit offset :offset"
+  pagableDeltaLoadQuery: "select id,name,phone,isIntrested__c,productAccountId__c,lastModifiedSystem__c,IsDeleted,LastModifiedDate,createdDate from Account where lastModifiedSystem__c!='I' and LastModifiedDate > :batch_start_timestamp and LastModifiedDate <= :batch_end_timestamp  LIMIT :limit offset :offset"
   updateStatement: ""
   insertStatement: ""
   deleteStatement: ""
   pageSize: "10"
-jobInfo:
-  lastRunquery: "select max(batch_end_timestamp) as batch_end_timestamp  from job_info"
-  checkIdQuery: "select id from job_info where id=:id"
-  batchFrequency: "PT5M"
-  batchInfoCreateStatement: 
-  
-  

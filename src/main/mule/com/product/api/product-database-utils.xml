@@ -12,6 +12,15 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<db:execute-ddl doc:id="5dd7bfa9-ac49-433a-91e3-78c7a8e263c8" config-ref="Database_Config">
 			<db:sql ><![CDATA[DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS job_info;
+CREATE TABLE job_info (
+  job_id VARCHAR(255) PRIMARY KEY,
+  trace_id VARCHAR(255),
+  route VARCHAR(255) NOT NULL,
+  error_message VARCHAR(255),
+  is_success BOOLEAN,
+  batch_start_timestamp TIMESTAMP,
+  batch_end_timestamp TIMESTAMP
+);
 CREATE TABLE account (
   account_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
@@ -24,13 +33,7 @@ CREATE TABLE account (
   modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 INSERT INTO account ( name, phone, salesforce_id) VALUES ('testname', '+91 12345', 'SFDCTestID');
-CREATE TABLE job_info (
-  id VARCHAR(255) PRIMARY KEY,
-  job_id VARCHAR(255),
-  is_success BOOLEAN,
-  batch_start_timestamp TIMESTAMP,
-  batch_end_timestamp TIMESTAMP
-);]]></db:sql>
+]]></db:sql>
 		</db:execute-ddl>
 		<ee:transform doc:name="Transform Message" doc:id="da0741b2-062f-4e7a-b691-72b7fd77bd0d" >
 			<ee:message >
@@ -44,7 +47,7 @@ output application/json
 		</ee:transform>
 	</flow>
 	<sub-flow name="product-database-utils-select-Sub_Flow" doc:id="cf7091b7-a960-463f-ae59-d738b1e0a873" >
-		<db:select doc:name="Select" doc:id="d719fd9d-eb4e-43d0-962e-8ea57e1447fe" config-ref="Database_Config">
+		<db:select doc:name="Select" doc:id="d719fd9d-eb4e-43d0-962e-8ea57e1447fe" config-ref="Database_Config" transactionalAction="NOT_SUPPORTED" queryTimeoutUnit="MINUTES">
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.parameters]]]></db:input-parameters>
 		</db:select>
@@ -60,7 +63,7 @@ output application/json
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.parameters]]]></db:input-parameters>
 			<db:auto-generated-keys-column-names >
-				<db:auto-generated-keys-column-name value="account_id" />
+				<db:auto-generated-keys-column-name value='#[if(vars.query contains "account") "account_id" else "job_id"]' />
 			</db:auto-generated-keys-column-names>
 		</db:insert>
 	</sub-flow>
@@ -76,4 +79,31 @@ output application/json
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 		</db:bulk-delete>
 	</sub-flow>
+	<flow name="product-database-utilsFlow1" doc:id="96bdf63b-33e4-4844-a622-8deaf0f52def" >
+		<http:listener doc:name="Listener" doc:id="d604769c-98f7-40bd-926e-eec2e863b9be" config-ref="sales-products-sapi-httpListenerConfig" path="/batch" allowedMethods="GET"/>
+		<ee:transform doc:name="Transform Message" doc:id="c89114dd-3538-4733-9978-b3b68e8602ad" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/java
+---
+"select * from job_info"]]></ee:set-variable>
+				<ee:set-variable variableName="parameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="product-database-utils-select-Sub_Flow" doc:id="daf15b23-ef5b-4832-9457-50ac4ac96218" name="product-database-utils-select-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="7ed7a5e0-04ad-42cc-bb06-d58d8ade27c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 </mule>

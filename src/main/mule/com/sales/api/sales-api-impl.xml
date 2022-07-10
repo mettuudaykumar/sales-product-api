@@ -20,7 +20,7 @@ output application/java
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="sales-database-utils-queryall-Sub_Flow" doc:id="e4840427-f777-4e46-9201-41199efa3fb0" name="sales-database-utils-queryall-Sub_Flow"/>
+		<flow-ref doc:name="sales-database-utils-query-single-Sub_Flow" doc:id="e4840427-f777-4e46-9201-41199efa3fb0" name="sales-database-utils-query-single-Sub_Flow"/>
 		<ee:transform doc:name="output" doc:id="e4a0113e-e907-45a1-b787-95cad7a69b6d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -89,7 +89,7 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<choice doc:name="Choice" doc:id="9c48fbca-b65c-4475-9c40-c37c71a0e5e4" >
-			<when expression="payload.items[0].successful">
+			<when expression="#[payload.items[0].successful]">
 				<ee:transform doc:name="output" doc:id="c38615fd-96dd-419a-8583-9cce5e9bc135" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -117,6 +117,7 @@ output application/java
         "name": payload.name,
         "isIntrested__c": payload.isIntrested default false,
         id: vars.id,
+        "lastModifiedSystem__c": "E",
         productAccountId__c: null
     }]]]></ee:set-payload>
 
@@ -144,7 +145,7 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<choice doc:name="Choice" doc:id="825b2cb1-fb62-445a-84fd-5ef4f2f0e04d" >
-			<when expression="payload.items[0].successful">
+			<when expression="#[payload.items[0].successful]">
 				<ee:transform doc:name="output" doc:id="938055f2-9545-41df-9f42-cef7b0441eb5" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -170,13 +171,28 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="sales-database-utils-delete-Sub_Flow" doc:id="0ec7bdaf-c380-4949-a19e-11861913ed76" name="sales-database-utils-delete-Sub_Flow"/>
-		<ee:transform doc:name="Transform Message" doc:id="1d94f01f-3333-49d3-8121-755655a1be03" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="f0ab7ab0-55ca-4f6c-bdf7-c9af3c6c0670" >
+			<when expression="#[payload.successful]">
+				<ee:transform doc:name="Transform Message" doc:id="1d94f01f-3333-49d3-8121-755655a1be03">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="513984d2-ec5a-4d01-b4c7-dd771d9de193" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<raise-error doc:name="Raise error" doc:id="b8896188-ad35-48b7-ac75-0bd2b5b60cfe" type="CUSTOM_SALESFORCE:DELETE_FAILED"/>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>

@@ -114,6 +114,7 @@ output application/java
 	phone : payload.phone, 
 	salesforce_id:null,
 	is_intrested: payload.isIntrested default false,
+	"LAST_MODIFIED_SYSTEM": "E",
 	id: vars.id
 }]]]></ee:set-variable>
 			</ee:variables>
