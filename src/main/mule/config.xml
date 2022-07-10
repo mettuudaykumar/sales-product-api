@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<db:config name="Database_Config" doc:name="Database Config"
 		doc:id="e25d3696-d3e0-496a-a70a-89d020e5d83b">
 		<db:generic-connection
-			url="jdbc:h2:file:C:\Users\Siva Namratha\OneDrive\Desktop\h2\h21;MODE=MYSQL;AUTO_SERVER=TRUE"
+			url="jdbc:h2:file:${mule.home}\h2\h21;MODE=MYSQL;AUTO_SERVER=TRUE"
 			driverClassName="org.h2.Driver" />
 	</db:config>
 	 <http:listener-config name="sales-products-sapi-httpListenerConfig">
@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
     <apikit:config name="sales-products-sapi-config" api="resource::3da7669b-c9bd-4799-84a3-35ca59133126:sales-product-api:2.0.2:raml:zip:sales-products-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="a69ddd15-897e-4c2d-83a4-6945b721a0d0" file="${mule.env}-properties.yaml" key="${mule.key}" />
    <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="3e4b1709-f1e2-4951-ad41-6600406f012b" >
-		<salesforce:basic-connection username="mettu.udaykumar@gmail.com" password="Salesforce@1995" securityToken="riQbmDzoky4suWKmNItIWpAq" />
+		<salesforce:basic-connection username="${secure::sales.username}" password="${secure::sales.password}" securityToken="${secure::sales.securityToken}" />
 	</salesforce:sfdc-config>
 	<configuration doc:name="Configuration" doc:id="216605c6-ef06-4e99-9fc3-89cba697aac4" defaultErrorHandler-ref="error-handlingError_Handler" />
 	

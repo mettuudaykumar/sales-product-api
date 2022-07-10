@@ -33,5 +33,8 @@ sales:
   insertStatement: ""
   deleteStatement: ""
   pageSize: "10"
+  username: "mettu.udaykumar@gmail.com"
+  password: "![zXG4KgFfzbhEP4f7NRUepA==]"
+  securityToken: "![f6zNq384DjJt+QakI5X3oR/HYswDdA3yc4wkwMwiWD4=]"
 printPayload: "Y"
 appName: "sales-product-api"
