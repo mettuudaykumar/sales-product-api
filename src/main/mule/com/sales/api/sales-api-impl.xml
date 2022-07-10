@@ -102,6 +102,9 @@ output application/json
 					</ee:message>
 				</ee:transform>
 			</when>
+			<otherwise >
+				<raise-error doc:name="Raise error CUSTOM_SALESFORCE:INSERT_FAILED" doc:id="4f39abbc-3f6a-41de-981a-6287a5b20ffc" type="CUSTOM_SALESFORCE:INSERT_FAILED" description="INSERTING RECORDS IN SALESFORCE FAILED"/>
+			</otherwise>
 		</choice>
 	
 </sub-flow>
@@ -158,7 +161,11 @@ output application/json
 					</ee:message>
 				</ee:transform>
 			</when>
-		</choice>
+			<otherwise >
+				<raise-error doc:name="Raise error CUSTOM_SALESFORCE:UPDATE_FAILED" doc:id="a88bb6d3-d3c7-4a21-b968-e985ac7c7630" type="CUSTOM_SALESFORCE:UPDATE_FAILED" description="ERROR WHILE UPDATING THE RECORD IN SALESFORCE "/>
+			</otherwise>
+		
+</choice>
 	
 </sub-flow>
 	<sub-flow name="sales-api-delete-implSub_Flow" doc:id="858721d8-2cc0-4d31-8d5e-f137c8865263" >
@@ -191,7 +198,7 @@ output application/json
 payload]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<raise-error doc:name="Raise error" doc:id="b8896188-ad35-48b7-ac75-0bd2b5b60cfe" type="CUSTOM_SALESFORCE:DELETE_FAILED"/>
+				<raise-error doc:name="Raise error CUSTOM_SALESFORCE:DELETE_FAILED" doc:id="b8896188-ad35-48b7-ac75-0bd2b5b60cfe" type="CUSTOM_SALESFORCE:DELETE_FAILED" description="ERROR WHILE DELETING THE RECORD IN SALESFORCE"/>
 			</otherwise>
 		</choice>
 	</sub-flow>

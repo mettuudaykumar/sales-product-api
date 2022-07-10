@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="error-handlingError_Handler" doc:id="e299a29c-b73f-4f71-bb36-6b3a3177eb5a" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="89fa7c9b-950c-4342-90a2-2bd8207d205c" type="DB_CUSTOM:*,CUSTOM_SALESFORCE:*">
+			<ee:transform doc:name="Transform Message" doc:id="1e28255b-15fe-432e-9359-1874b3ba0230" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	code: 500,
+	errorType: error.errorType,
+	message: error.detailedDescription,
+	(errorPayload: payload..errors) if (not isEmpty(payload..errors))
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9840b51f-6752-4741-804a-c741bf8bd3a3" type="ANY">
+			<ee:transform doc:name="Transform Message" doc:id="a271625d-efa1-4ed8-92a2-1c20b7dcee3a" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	code: 500,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+	<error-handler name="logging-framework-error-handlingError_Handler" doc:id="724fb472-d0a7-4f67-acc8-c0d333b014eb" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c3dd046d-217e-47de-92e5-dd8c366df9ca" >
+			<ee:transform doc:name="Transform Message" doc:id="d27251a3-8ef5-4db5-b4dc-c580de85798f" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   
+	errorType: error.errorType,
+	message: "error in the logging framework",
+	detailedMessage: error.detailedDescription
+	
+	}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="9679f6b3-47dc-4f79-a27b-2449c5071ebe" message="#[payload]"/>
+		</on-error-continue>
+	</error-handler>
+</mule>

@@ -6,12 +6,8 @@
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="05c43994-78fe-4e1f-9b2b-0d31b34d1cce" />
-	<flow name="sales-to-database-implFlow" doc:id="4e47632f-5683-4ea7-9525-029003cc9b15" >
-		<scheduler doc:name="Scheduler" doc:id="e457a82b-38c5-40f5-8830-fd726ea44853" >
-			<scheduling-strategy >
-				<fixed-frequency timeUnit="MINUTES" frequency="2" startDelay="1"/>
-			</scheduling-strategy>
-		</scheduler>
+	<sub-flow name="sales-to-database-implFlow" doc:id="4e47632f-5683-4ea7-9525-029003cc9b15" >
+		
 		<flow-ref doc:name="sales-to-database-fetch-lastrun-timestamp-implSub_Flow" doc:id="444f3c24-c08e-4e39-929a-530549d3e006" name="sales-to-database-fetch-lastrun-timestamp-implSub_Flow" target="currentRunTimestamp" targetValue="#[payload[0].BATCH_END_TIMESTAMP]"/>
 		<ee:transform doc:name="setBatchJobInfo" doc:id="45001a40-422d-4833-896a-5d3f192b737e" >
 			<ee:message >
@@ -96,27 +92,52 @@ p("secure::sales.pagableDeltaLoadQuery")]]></ee:set-variable>
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="ffe286ad-90a2-4b7b-8a46-bf24779d3dda" message="#[vars.countQuery]"/>
 		<flow-ref doc:name="sales-api-get-sales-account-count-implSub_Flow" doc:id="40a94a5d-07b9-4686-8f95-8d4c9f2c8ac0" name="sales-api-get-sales-account-count-implSub_Flow" target="totalRecordCount" targetValue="#[sizeOf(payload)]"/>
-		<logger level="INFO" doc:name="Logger" doc:id="28998748-9a71-4d5a-bd2f-ddb539bd7495" message="#[vars.totalRecordCount]"/>
 		<set-variable value='#[p("secure::sales.pageSize") as Number]' doc:name="SetPageSize" doc:id="2fb04b6c-f53c-45ec-b002-ef4022828352" variableName="pageSize"/>
 		<flow-ref doc:name="common-utils-pagination-Sub_Flow" doc:id="8709a791-d2a9-4674-becd-6559df895c5a" name="common-utils-pagination-Sub_Flow" target="pages"/>
-		<foreach doc:name="For Each" doc:id="a1aa9da3-2764-42e3-9d65-1ebf859e3652" collection="#[vars.pages]">
-			<flow-ref doc:name="sales-to-database-impl-query-pagable-Sub_Flow" doc:id="ce339e4d-3367-47a4-8e53-36162dc93a7a" name="sales-to-database-impl-query-pagable-Sub_Flow" target="sfRecords"/>
-			<set-variable value="#[vars.sfRecords.productAccountId__c filter ($ != null)]" doc:name="Set ProductAccountIds" doc:id="7c5ecbb5-23b2-431c-8462-59064f5a3822" variableName="ids"/>
-			<choice doc:name="Choice" doc:id="795fd2d5-dff5-4a1e-8c76-dab0f428ff74" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="a50484d9-7a45-458b-90d9-7c8e4d4efdfd">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="logVariable"><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+
+	message: "SALES TO PRODUCT FETCHED RECORD COUNT FOR BATCH",
+	"resourcePath" : "SCHEDULER:/ SALES-TO-PRODUCT",
+	keyFields: {
+		isFullLoad: vars.isFullLoad,
+		totalRecordCount: vars.totalRecordCount,
+		pageSize: vars.pageSize,
+		pages: sizeOf(vars.pages)
+		
+	},
+	info: {
+		batchInf: vars.currentBatchJobInfo
+	}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-trace-step-Flow" doc:id="def576f8-7145-4ee2-a8da-e03312ff13db" name="logging-trace-step-Flow" />
+		<try doc:name="Try" doc:id="efaaf69e-764a-47e9-a843-36e37d2fd601" >
+			<foreach doc:name="For Each" doc:id="a1aa9da3-2764-42e3-9d65-1ebf859e3652" collection="#[vars.pages]">
+			<flow-ref doc:name="sales-to-database-impl-query-pagable-Sub_Flow" doc:id="ce339e4d-3367-47a4-8e53-36162dc93a7a" name="sales-to-database-impl-query-pagable-Sub_Flow" target="sfRecords" />
+			<set-variable value="#[vars.sfRecords.productAccountId__c filter ($ != null)]" doc:name="Set ProductAccountIds" doc:id="7c5ecbb5-23b2-431c-8462-59064f5a3822" variableName="ids" />
+			<choice doc:name="isInsertOrUpdate" doc:id="795fd2d5-dff5-4a1e-8c76-dab0f428ff74">
 				<when expression="#[not isEmpty(vars.ids)]">
-					<flow-ref doc:name="sales-to-database-check-records-implSub_Flow" doc:id="b150f8db-a4b4-4d10-8fff-bf933fe07619" name="sales-to-database-check-records-implSub_Flow" target="matchedProductAccountIds" targetValue="#[payload.ACCOUNT_ID]"/>
+					<flow-ref doc:name="sales-to-database-check-records-implSub_Flow" doc:id="b150f8db-a4b4-4d10-8fff-bf933fe07619" name="sales-to-database-check-records-implSub_Flow" target="matchedProductAccountIds" targetValue="#[payload.ACCOUNT_ID]" />
 				</when>
-				<otherwise >
-					<set-variable value="#[[]]" doc:name="Set matchedProductAccountIds" doc:id="98894c0f-1332-4305-9c91-dc37f3929895" variableName="matchedProductAccountIds"/>
+				<otherwise>
+					<set-variable value="#[[]]" doc:name="Set matchedProductAccountIds" doc:id="98894c0f-1332-4305-9c91-dc37f3929895" variableName="matchedProductAccountIds" />
 				</otherwise>
 			</choice>
-			<ee:transform doc:name="prepareDBPayload" doc:id="0c9a63c8-bcab-40ab-a223-4fae4fc95ad6" >
-				<ee:message >
+			<ee:transform doc:name="prepareDBPayload" doc:id="0c9a63c8-bcab-40ab-a223-4fae4fc95ad6">
+				<ee:message>
 				</ee:message>
-				<ee:variables >
-					<ee:set-variable variableName="productDbRequest" ><![CDATA[%dw 2.0
+				<ee:variables>
+					<ee:set-variable variableName="productDbRequest"><![CDATA[%dw 2.0
 var updateRecords=  vars.sfRecords filter (vars.matchedProductAccountIds contains (($.productAccountId__c as Number) default null ))
 var insertRecords= vars.sfRecords -- updateRecords
 
@@ -143,22 +164,118 @@ output application/java
 }]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
-			<choice doc:name="Choice" doc:id="5ea6a3d0-f8e9-441a-99e2-370d9ad29eaa" >
+			<choice doc:name="areRecordsTObeCreated?" doc:id="5ea6a3d0-f8e9-441a-99e2-370d9ad29eaa">
 				<when expression="#[not isEmpty(vars.productDbRequest.dbCreate)]">
-					<flow-ref doc:name="sales-to-database-bulk-create-implSub_Flow" doc:id="e028897e-1a92-4a3c-929f-14dde8f1dac9" name="sales-to-database-bulk-create-implSub_Flow"/>
-					<flow-ref doc:name="sales-to-database-query-productdb-by-salesforceids-implSub_Flow" doc:id="ec58b7d5-c425-4f46-9237-cdb38603ce10" name="sales-to-database-query-productdb-by-salesforceids-implSub_Flow"/>
+					<ee:transform doc:name="prepLoggingVariables" doc:id="d7b63c06-af31-4673-88e1-6b98aeaf89aa">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="logVariable"><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+
+	message: "SALES TO PRODUCT RECORDS TO BE CREATED IN PRODUCT",
+	"resourcePath" : "SCHEDULER:/ SALES-TO-PRODUCT",
+	keyFields: {
+		salesforceIds: vars.productDbRequest.dbCreate.salesforce_id
+		
+	},
+	info: {
+		batchInf: vars.currentBatchJobInfo
+	}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-trace-step-Flow" doc:id="c11c5b65-1c5a-400d-ab3b-17b7cc1c55f5" name="logging-trace-step-Flow" />
+		
+					<flow-ref doc:name="sales-to-database-bulk-create-implSub_Flow" doc:id="e028897e-1a92-4a3c-929f-14dde8f1dac9" name="sales-to-database-bulk-create-implSub_Flow" />
+					<flow-ref doc:name="sales-to-database-query-productdb-by-salesforceids-implSub_Flow" doc:id="ec58b7d5-c425-4f46-9237-cdb38603ce10" name="sales-to-database-query-productdb-by-salesforceids-implSub_Flow" />
 					<flow-ref doc:name="sales-to-database-upload-productids-to-salesforce-implSub_Flow" doc:id="071a8f65-5423-4c06-b03c-091cc9375b53" name="sales-to-database-upload-productids-to-salesforce-implSub_Flow" />
 				</when>
 			</choice>
-			<choice doc:name="Choice" doc:id="9c1b5458-9b47-45d9-bd6f-783e0fd81b3e" >
+			<choice doc:name="areRecordsTObeUpdated?" doc:id="9c1b5458-9b47-45d9-bd6f-783e0fd81b3e">
 				<when expression="#[not isEmpty(vars.productDbRequest.dbUpdate)]">
-					<flow-ref doc:name="sales-to-database-bulk-update-implSub_Flow" doc:id="1fb3cac6-5ce3-4a3e-9e5a-93780f5577a9" name="sales-to-database-bulk-update-implSub_Flow"/>
+					<ee:transform doc:name="prepLoggingVariables" doc:id="18763a1b-d814-4fa6-a720-b36794e8a673">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="logVariable"><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+
+	message: "SALES TO PRODUCT RECORDS TO BE UPDATED IN PRODUCT",
+	"resourcePath" : "SCHEDULER:/ SALES-TO-PRODUCT",
+	keyFields: {
+		salesforceIds: vars.productDbRequest.dbCreate.salesforce_id
+		
+	},
+	info: {
+		batchInf: vars.currentBatchJobInfo
+	}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-trace-step-Flow" doc:id="61b39745-17b0-4f09-9238-2dccebfa7271" name="logging-trace-step-Flow" />
+		
+					<flow-ref doc:name="sales-to-database-bulk-update-implSub_Flow" doc:id="1fb3cac6-5ce3-4a3e-9e5a-93780f5577a9" name="sales-to-database-bulk-update-implSub_Flow" />
 				</when>
 			</choice>
 		</foreach>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e662e3d5-a45a-44ba-bafa-f179cb115834" type="DB:CONNECTIVITY, DB:QUERY_EXECUTION, DB:RETRY_EXHAUSTED, SALESFORCE:CONNECTIVITY, SALESFORCE:LIMIT_EXCEEDED, SALESFORCE:MUTUAL_AUTHENTICATION_FAILED, SALESFORCE:RETRY_EXHAUSTED, SALESFORCE:TIMEOUT">
+					<ee:transform doc:name="prepareErrorMessage" doc:id="a437fa9a-70dd-4fee-b95d-35947b69af19" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: error.errorType,
+	message: error.detailedDescription,
+	(errorPayload: payload..errors) if (not isEmpty(payload..errors))
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propragate" doc:id="0cb892e5-5e71-4001-afc9-e3d28fb91efc" >
+					<ee:transform doc:name="setCurrentBatchInfo" doc:id="9f57f492-7c4d-4291-9c24-744e350cebb2" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: error.errorType,
+	message: error.detailedDescription,
+	(errorPayload: payload..errors) if (not isEmpty(payload..errors))
+}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="currentBatchJobInfo" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	trace_id: vars.currentBatchJobInfo.trace_id,
+	route: vars.currentBatchJobInfo.route,
+	error_message: error.detailedDescription,
+	batch_start_timestamp: vars.currentBatchJobInfo.batch_start_timestamp, 
+	batch_end_timestamp: vars.currentBatchJobInfo.batch_end_timestamp ,
+	job_id: vars.currentBatchJobInfo.job_id,
+	is_success: false
+	
+}]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<flow-ref doc:name="sales-to-database-job-info-upsert-implSub_Flow" doc:id="b1c04b95-c25e-4d07-b948-4c3d3d0df81a" name="sales-to-database-job-info-upsert-implSub_Flow"/>
+				</on-error-propagate>
+				
+			</error-handler>
+		</try>
 		<set-variable value="#[vars.currentBatchJobInfo ++ {is_success : true}]" doc:name="Set currentBatchJobInfo" doc:id="da49833d-b036-434a-ab4d-199756911d6c" variableName="currentBatchJobInfo"/>
 		<flow-ref doc:name="sales-to-database-job-info-upsert-implSub_Flow" doc:id="53fb31b9-6005-4a7d-a29a-0b0fc8e75680" name="sales-to-database-job-info-upsert-implSub_Flow"/>
-	</flow>
+	</sub-flow>
 		<sub-flow name="sales-to-database-job-info-upsert-implSub_Flow" doc:id="97ddf2b4-74d2-44a9-b37e-ef06d8959944" >
 		<ee:transform doc:name="prepareQueryData" doc:id="59f31299-9e0f-4954-891a-4d446d80ddfc" >
 			<ee:message >
@@ -357,7 +474,7 @@ payload]]></ee:set-payload>
 		</ee:transform>
 			</when>
 			<otherwise >
-				<raise-error doc:name="Raise DB_CUSTOM:UPDATE_FAILED" doc:id="1bafa1c2-c573-4443-8824-92851fd5f266" type="DB_CUSTOM:UPDATE_FAILED" description="NO RECORDS ARE UPDATED"/>
+				<raise-error doc:name="Raise DB_CUSTOM:UPDATE_FAILED" doc:id="1bafa1c2-c573-4443-8824-92851fd5f266" type="DB_CUSTOM:UPDATE_FAILED" description="NO RECORDS ARE UPDATED IN DB"/>
 			</otherwise>
 		</choice>
 	</sub-flow>
@@ -456,7 +573,7 @@ payload]]></ee:set-payload>
 				</ee:transform>
 			</when>
 			<otherwise >
-				<raise-error doc:name="Raise CUSTOM_SALESFORCE:RECORD_NOTUPDATED" doc:id="c0148142-10e1-405b-9a00-61e4522d5882" type="CUSTOM_SALESFORCE:RECORD_NOTUPDATED" description="error while updating the record"/>
+				<raise-error doc:name="Raise CUSTOM_SALESFORCE:RECORD_NOTUPDATED" doc:id="c0148142-10e1-405b-9a00-61e4522d5882" type="CUSTOM_SALESFORCE:RECORD_NOTUPDATED" description="ERROR WHILE UPDATING RECORDS IN SALESFORCE"/>
 			</otherwise>
 		
 </choice>

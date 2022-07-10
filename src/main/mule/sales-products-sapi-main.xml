@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <flow name="sales-products-sapi-main">
         <http:listener config-ref="sales-products-sapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -19,10 +20,15 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Bad request"}]]></ee:set-payload>
+{
+	code: 400,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -32,10 +38,15 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Resource not found"}]]></ee:set-payload>
+{
+	code: 404,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -45,10 +56,15 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Method not allowed"}]]></ee:set-payload>
+{
+	code: 405,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -58,10 +74,15 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Not acceptable"}]]></ee:set-payload>
+{
+	code: 406,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[406]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -71,10 +92,15 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Unsupported media type"}]]></ee:set-payload>
+{
+	code: 415,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[415]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -84,10 +110,15 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Not Implemented"}]]></ee:set-payload>
+{
+	code: 501,
+	errorType: error.errorType,
+	message: error.detailedDescription
+	
+	}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[501]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -121,67 +152,544 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\sales\accounts\(id):application\json:sales-products-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+        <ee:transform doc:name="prepLoggingVariables" doc:id="5931da89-5e60-46e9-ad3f-0c5dd7124279" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALESFORCE RECORD START",
+	"resourcePath" : "put:\sales\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="3a682f34-aeeb-4663-9cf4-48f8f943c289" name="logging-start-Flow"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:name="setParams">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
         <flow-ref doc:name="sales-api-update-implSub_Flow" doc:id="341128c0-1615-4151-bb6e-a5be919e7674" name="sales-api-update-implSub_Flow"/>
-		<logger level="INFO" message="put:\sales\accounts\(id):application\json:sales-products-sapi-config" />
+    <ee:transform doc:name="prepLoggingVariables" doc:id="6482b1a4-be60-4aa6-afc8-0c9d1071ace4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALESFORCE RECORD",
+	"resourcePath" : "put:\sales\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="fbab1f55-e3c4-4925-ab06-be82a091b651" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="put:\product\accounts\(id):application\json:sales-products-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+		<ee:transform doc:name="prepLoggingVariables" doc:id="98b38281-008d-4c03-b759-853b95f96a7e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE PRODUCT RECORD",
+	"resourcePath" : "put:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="13ffc334-ce2a-43b4-a96d-e07217ef1cf4" name="logging-start-Flow"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <flow-ref doc:name="product-api-update-implSub_Flow" doc:id="1b1bdd35-af26-4e66-992e-d9dc3d972dc6" name="product-api-update-implSub_Flow"/>
-		<logger level="INFO" message="put:\product\accounts\(id):application\json:sales-products-sapi-config" />
+		<flow-ref doc:name="product-api-update-implSub_Flow" doc:id="1b1bdd35-af26-4e66-992e-d9dc3d972dc6" name="product-api-update-implSub_Flow"/>
+    <ee:transform doc:name="prepLoggingVariables" doc:id="34e34d26-3cc5-4281-ae84-43a157a4e943" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE PRODUCT RECORD",
+	"resourcePath" : "put:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="268c53b4-ff7b-490a-85de-87516690fb7a" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="delete:\sales\accounts\(id):sales-products-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+        <ee:transform doc:name="prepLoggingVariables" doc:id="579777d3-0ef0-45b3-a5d5-c6d9ff284451" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE SALES RECORD",
+	"resourcePath" : "DELETE:\sales\accounts\(id)",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="b5f6e7de-f6c4-401d-95fe-2e7d7f46d58b" name="logging-start-Flow"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
         <flow-ref doc:name="sales-api-delete-implSub_Flow" doc:id="7409029d-900c-4e5c-bab4-927726828b75" name="sales-api-delete-implSub_Flow"/>
-		<logger level="INFO" message="delete:\sales\accounts\(id):sales-products-sapi-config" />
+    <ee:transform doc:name="prepLoggingVariables" doc:id="1d885fed-46cf-43ba-8143-254e4d431798" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE SALES RECORD",
+	"resourcePath" : "DELETE:\sales\accounts\(id)",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="bb02dfef-a881-4127-a64c-7f94990a3ff1" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="delete:\product\accounts\(id):sales-products-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+        <ee:transform doc:name="prepLoggingVariables" doc:id="152d7082-185c-4153-9fc1-494049db81ac" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE PRODUCT RECORD",
+	"resourcePath" : "delete:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="fb9b9e44-aea9-4664-b667-1f2362bd93e1" name="logging-start-Flow"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
         <flow-ref doc:name="product-api-delete-implSub_Flow" doc:id="7d6d71a8-de9f-4ac3-ac9c-ba79cbdd9b03" name="product-api-delete-implSub_Flow"/>
-		<logger level="INFO" message="delete:\product\accounts\(id):sales-products-sapi-config" />
+   <ee:transform doc:name="prepLoggingVariables" doc:id="3b49d6a6-a6d1-4ef9-87ed-4f060ef7aba8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE PRODUCT RECORD",
+	"resourcePath" : "delete:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="1b6972a4-776a-40a1-8f8f-0e810ba480b5" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="get:\product\accounts:sales-products-sapi-config">
-        <flow-ref doc:name="product-api-query-all-implSub_Flow" doc:id="bf717017-be62-4bc7-b687-53f3b0d3629c" name="product-api-query-all-implSub_Flow"/>
+        <ee:transform doc:name="prepLoggingVariables" doc:id="d54a2406-37b2-4e0b-925f-78d878195548" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET PRODUCT ACCOUNTS",
+	"resourcePath" : "get:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="c785fb51-56f0-48da-88dd-0b28031c78e8" name="logging-start-Flow"/>
+		<flow-ref doc:name="product-api-query-all-implSub_Flow" doc:id="bf717017-be62-4bc7-b687-53f3b0d3629c" name="product-api-query-all-implSub_Flow"/>
+    <ee:transform doc:name="prepLoggingVariables" doc:id="9882b585-dd39-4944-8850-8e57b66fc671" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET PRODUCT ACCOUNTS",
+	"resourcePath" : "get:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="d453a136-37a7-46fe-a6b9-194c8cfb7116" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="get:\sales\accounts:sales-products-sapi-config">
-        <flow-ref doc:name="sales-api-queryall-implSub_Flow" doc:id="361e62ce-00da-4532-aa6e-33abb4ce5106" name="sales-api-queryall-implSub_Flow"/>
-		<logger level="INFO" message="get:\sales\accounts:sales-products-sapi-config" />
+        <ee:transform doc:name="prepLoggingVariables" doc:id="00b4665f-af04-44c1-a2b2-102799b10619" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET SALES RECORD",
+	"resourcePath" : "GET:\sales\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="571f5785-3bae-4409-90b7-0e2f4f0c1618" name="logging-start-Flow"/>
+		<flow-ref doc:name="sales-api-queryall-implSub_Flow" doc:id="361e62ce-00da-4532-aa6e-33abb4ce5106" name="sales-api-queryall-implSub_Flow"/>
+   <ee:transform doc:name="prepLoggingVariables" doc:id="df3ff45c-c129-4cc9-8060-a0b95adcc598" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET SALES RECORD",
+	"resourcePath" : "GET:\sales\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="77a9be03-d166-43aa-8c43-342226eb0688" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="get:\sales\accounts\(id):sales-products-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+        <ee:transform doc:name="prepLoggingVariables" doc:id="b97ead83-0dc7-4538-94cd-b41953cbdab8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET SALES RECORD",
+	"resourcePath" : "get:\sales\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="e58f738f-9bdd-4ab2-81df-ecb7944a2ee3" name="logging-start-Flow"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
 		<flow-ref doc:name="sales-api-query-by-id-implSub_Flow" doc:id="530342eb-f5ef-48ae-979f-777b08569fce" name="sales-api-query-by-id-implSub_Flow"/>
-		<logger level="INFO" message="get:\sales\accounts\(id):sales-products-sapi-config" />
+    <ee:transform doc:name="prepLoggingVariables" doc:id="fef4b134-ae5a-4f47-8ced-473e03aae378" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET SALES RECORD",
+	"resourcePath" : "get:\sales\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="9fcb0686-be53-41e9-80aa-71d35f66ba01" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="get:\product\accounts\(id):sales-products-sapi-config">
-        <flow-ref doc:name="product-api-query-single-implSub_Flow" doc:id="ef262b94-fa95-4914-a535-a733b091cffd" name="product-api-query-single-implSub_Flow"/>
-		<logger level="INFO" message="get:\product\accounts\(id):sales-products-sapi-config" />
+        <ee:transform doc:name="prepLoggingVariables" doc:id="27a4caf3-f24a-4e47-94a2-e9aa8d35b4a1" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET PRODUCT RECORD",
+	"resourcePath" : "get:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="2d1eb1be-c50f-4787-93b8-f579b2fa57a9" name="logging-start-Flow"/>
+		<flow-ref doc:name="product-api-query-single-implSub_Flow" doc:id="ef262b94-fa95-4914-a535-a733b091cffd" name="product-api-query-single-implSub_Flow"/>
+    <ee:transform doc:name="prepLoggingVariables" doc:id="ac2063d6-0f35-4ffb-9230-25294ffa1826" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "GET PRODUCT RECORD",
+	"resourcePath" : "get:\product\accounts\(id):application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="78dec0eb-834f-4bc7-9cdd-19d28102e63b" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="post:\product\accounts:application\json:sales-products-sapi-config">
-        <flow-ref doc:name="product-api-create-implSub_Flow" doc:id="290070c6-e797-4e26-8609-4be8b1a44b47" name="product-api-create-implSub_Flow"/>
-        <logger level="INFO" message="post:\product\accounts\(id):application\json:sales-products-sapi-config" />
+        <ee:transform doc:name="prepLoggingVariables" doc:id="b1e6f51d-0395-46d8-b603-a5543aadc788" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "post:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="6472d0a6-0ef1-4408-87df-61f9d721cc0c" name="logging-start-Flow"/>
+		<flow-ref doc:name="product-api-create-implSub_Flow" doc:id="290070c6-e797-4e26-8609-4be8b1a44b47" name="product-api-create-implSub_Flow"/>
+    <ee:transform doc:name="prepLoggingVariables" doc:id="ebb13513-0575-43a7-8518-434e9dc201c1" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "post:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="fe15e164-9398-4e01-93e8-dc2178f26fe2" name="logging-end-Flow"/>
+		
     </flow>
     <flow name="post:\sales\accounts:application\json:sales-products-sapi-config">
-        <flow-ref doc:name="sales-api-create-implSub_Flow" doc:id="3faa9570-5977-42aa-a007-c36d03bbb3e8" name="sales-api-create-implSub_Flow"/>
-		<logger level="INFO" message="post:\sales\accounts\(id):application\json:sales-products-sapi-config" />
+        <ee:transform doc:name="prepLoggingVariables" doc:id="8653db0c-74fa-4d4f-b306-3cd165f5a978" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "post:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="2a2e59bd-4384-46bd-b757-8511597d4761" name="logging-start-Flow"/>
+		<flow-ref doc:name="sales-api-create-implSub_Flow" doc:id="3faa9570-5977-42aa-a007-c36d03bbb3e8" name="sales-api-create-implSub_Flow"/>
+   <ee:transform doc:name="prepLoggingVariables" doc:id="097e8eb9-f246-4676-81be-25f305bbf403" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "post:\product\accounts:application",
+	keyFields: {
+		id: attributes.uriParams.'id'
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="b1ddc6e1-dacd-4fa8-a550-383b6a0b539a" name="logging-end-Flow"/>
+		
     </flow>
+	<flow name="sales-products-sales-to-product-mainFlow" doc:id="7d072b26-0dbb-4f77-b411-808cb170021a" >
+		<scheduler doc:name="Scheduler" doc:id="86a6aa7e-7eea-4ae7-a346-9149bd41527e" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" startDelay="2" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="874ce24a-6b42-4844-a239-471ab17a7e0b" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+
+	message: "SALES TO PRODUCT SYNC",
+	"resourcePath" : "SCHEDULER:/ SALES-TO-PRODUCT",
+	keyFields: {
+		
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="2891489e-ddd7-488e-ac57-97675ae85fe8" name="logging-start-Flow"/>
+		<flow-ref doc:name="sales-to-database-implFlow" doc:id="b5998faf-7276-4d92-a935-458d132d2f6a" name="sales-to-database-implFlow"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="7bc7f0a0-265f-496a-b7d2-3ff4efe0fe05" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+
+	message: "SALES TO PRODUCT SYNC",
+	"resourcePath" : "SCHEDULER:/ SALES-TO-PRODUCT",
+	keyFields: {
+		
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="01efbdd6-806d-4ae3-ba5b-1a6fab246690" name="logging-end-Flow"/>
+		
+	</flow>
+	<flow name="sales-products-sapi-product-to-sale-mainFlow" doc:id="9391efbb-68d9-476f-ade5-f412a8b3246f" >
+		<scheduler doc:name="Scheduler" doc:id="9f909664-9f0e-455c-95e2-ceb35c0e8337" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" startDelay="1" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="58e296b1-044a-4916-aab1-fc1044ef9885" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "PRODUCT TO SALES SYNC",
+	"resourcePath" : "SCHEDULER:/ PRODUCT-TO-SALES",
+	keyFields: {
+		
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-start-Flow" doc:id="853d73a4-423a-4d37-a385-1f6ceab57c8b" name="logging-start-Flow"/>
+		<flow-ref doc:name="product-to-sales-implFlow" doc:id="71c2c60d-cb5d-4042-ab69-330652eb9fc9" name="product-to-sales-implFlow"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="22063464-9f98-41b8-ac84-a1ed3545102e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "PRODUCT TO SALES SYNC",
+	"resourcePath" : "SCHEDULER:/ PRODUCT-TO-SALES",
+	keyFields: {
+		
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-end-Flow" doc:id="679bff60-d20a-4e34-ab44-9131909d6d2a" name="logging-end-Flow"/>
+		
+	</flow>
 </mule>

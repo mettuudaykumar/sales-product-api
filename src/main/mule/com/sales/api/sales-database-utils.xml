@@ -8,28 +8,268 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	
 	<sub-flow name="sales-database-utils-queryall-Sub_Flow" doc:id="872e5052-8fe4-47d3-ae78-6399e5255d9a" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="3e9e9703-944e-4e27-a170-951a12d3a225" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT SALES RECORD",
+	"resourcePath" : "SALESFORCE:QUERYALL",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="d783373c-675c-4ca3-9c9f-ccdeb6021ba0" name="logging-before-request-Flow"/>
+		
 		<salesforce:query-all doc:id="164cd572-9a14-43a9-a3e1-6bd68eb76283" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[#[vars.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[vars.parameters]]]></salesforce:parameters>
 		</salesforce:query-all>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="8f0877fe-f870-4671-81c7-5c13da6d68a3" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT SALES RECORD",
+	"resourcePath" : "SALESFORCE:QUERYALL",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="b36d8173-7783-4800-8af2-b245b49c3078" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="sales-database-utils-query-single-Sub_Flow" doc:id="bd8a584d-e448-4274-b3f0-f515e0ddbbc3" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="765dff2a-a84c-4cb7-a8c7-5d4db62b14a6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT SALES RECORD",
+	"resourcePath" : "SALESFORCE:QUERY",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="58c53fa3-e07a-46b6-9af5-910ef2471d5b" name="logging-before-request-Flow"/>
+		
 		<salesforce:query doc:name="Query" doc:id="7cdc35ce-ce32-4f4a-a199-f33a296dcc4a" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[#[vars.query]]]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[vars.parameters]]]></salesforce:parameters>
 		</salesforce:query>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="f4623e75-a593-4342-97cb-b00498eb464d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT SALES RECORD",
+	"resourcePath" : "SALESFORCE:QUERY",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="238d38f8-c7dc-4bb3-85ea-70c090649b2b" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="sales-database-utils-create-Sub_Flow" doc:id="508d70eb-05c7-4fa8-8382-bba2ab8c20df" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="2da36bb6-9245-46fa-b37d-c2ae7e22222f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "INERT SALES RECORD",
+	"resourcePath" : "SALESFORCE:INSERT",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="79009895-c61f-4695-902d-ff46749b19cc" name="logging-before-request-Flow"/>
+		
 		<salesforce:create type="#[vars.sObjectType]" doc:name="Create" doc:id="da247ed9-aff5-4299-b41c-193ab713bc24" config-ref="Salesforce_Config"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="aa1863df-2cf3-4471-9808-f4a39867a420" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "INERT SALES RECORD",
+	"resourcePath" : "SALESFORCE:INSERT",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="49292084-4a24-4843-8ec3-45ca37b16b7c" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="sales-database-utils-upsert-Sub_Flow" doc:id="4d10e881-8ac6-42b7-aaf6-ee018d681128" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="7863c240-5b45-44ca-9e61-7c27c88c6cc6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPSERT SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPSERT",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="c4decec8-922e-41d1-acf8-fe58a0fbeb03" name="logging-before-request-Flow"/>
+		
 		<salesforce:upsert objectType="#[vars.sObjectType]" doc:name="Upsert" doc:id="55569f61-4d14-40e7-a556-8c9229e3cafc" config-ref="Salesforce_Config" externalIdFieldName="#[vars.externalId]"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="cb3b3c88-05c6-43d0-acd5-a003833e4983" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPSERT SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPSERT",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="23f7aeb6-d3d7-4c14-8921-05393ae962cb" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="sales-database-utils-update-Sub_Flow" doc:id="07c1fde1-908f-447a-bc48-9ce9830262cd" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="1fc28cd9-5f3b-479f-bfb2-8693cdb84b0f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPDATE",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="4f45b050-1e38-4d29-a544-bf1707a1f5dd" name="logging-before-request-Flow"/>
+		
 		<salesforce:update doc:name="Update" doc:id="42fcc878-0ba4-479b-b69a-66c2d0d71939" config-ref="Salesforce_Config" type="#[vars.sObjectType]"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="294b396a-306d-4733-9cd4-bfa6c098b3a2" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPDATE",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="c21bfbe6-e207-4506-877a-30be4e5f9544" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="sales-database-utils-delete-Sub_Flow" doc:id="40874c5b-67f4-46ac-98c2-e473cba1e00e" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="08530919-a436-432b-a22b-c11170544aac" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPDATE",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="f5d499bf-412b-40f5-a940-89227577b7e6" name="logging-before-request-Flow"/>
+		
 		<salesforce:delete doc:name="Delete" doc:id="e4dbc434-7851-49d0-8cea-20ed1eee42d8" config-ref="Salesforce_Config"/>
+	<ee:transform doc:name="prepLoggingVariables" doc:id="680587f5-7226-41c6-8bb0-3c1205e1dab6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE SALES RECORD",
+	"resourcePath" : "SALESFORCE:UPDATE",
+	keyFields: {
+		sObject: vars.sObjectType
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="c49f6fef-5061-499e-9013-2718d6d9c2d7" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<flow name="sales-database-utilsFlow" doc:id="bdb0284a-3209-47cd-9685-5cc998e9ac2a" >
 		<http:listener doc:name="Listener" doc:id="654ed7d3-fad6-4314-9fb4-987b07038e5c" config-ref="sales-products-sapi-httpListenerConfig" path="/setup-sales"/>

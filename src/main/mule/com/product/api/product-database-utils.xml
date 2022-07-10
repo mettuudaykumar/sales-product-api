@@ -47,18 +47,118 @@ output application/json
 		</ee:transform>
 	</flow>
 	<sub-flow name="product-database-utils-select-Sub_Flow" doc:id="cf7091b7-a960-463f-ae59-d738b1e0a873" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="0c8c9ba8-fe8d-42a6-9ccf-fd60d7962326" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT PRODUCT RECORD",
+	"resourcePath" : "DB:SELECT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="d1e0bb4e-c067-4bb7-be10-53f22861c956" name="logging-before-request-Flow"/>
+		
 		<db:select doc:name="Select" doc:id="d719fd9d-eb4e-43d0-962e-8ea57e1447fe" config-ref="Database_Config" transactionalAction="NOT_SUPPORTED" queryTimeoutUnit="MINUTES">
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.parameters]]]></db:input-parameters>
 		</db:select>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="47851a09-0b81-4b4d-8e23-460321eeabd7" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "SELECT PRODUCT RECORD",
+	"resourcePath" : "DB:SELECT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="2f2e6494-f458-4ec5-932f-cd86c1698f01" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="product-database-utils-bulk-create-Sub_Flow" doc:id="844cfdbc-6217-4fc7-890f-820a1fddb727" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="38e804ee-daaa-425c-8484-41577eed0a07" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "DB:BULK_INSERT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="34ee9403-96c2-4879-893a-7d02182c0d28" name="logging-before-request-Flow"/>
+		
 		<db:bulk-insert doc:name="Bulk insert" doc:id="9be65df4-74ef-4a71-a1ef-3f6431c251fa" config-ref="Database_Config">
 			<db:bulk-input-parameters ><![CDATA[#[vars.parameters]]]></db:bulk-input-parameters>
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 		</db:bulk-insert>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="078e7492-fd55-4ada-9b5f-5c07638cf252" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "DB:BULK_INSERT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="3af7b30f-6364-48fa-aa41-fe43f86cc707" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="product-database-utils-create-Sub_Flow" doc:id="56130909-3444-476e-9d28-ac13e2773cf1" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="85f093ab-3dae-4e25-8d9a-b3f67b4712bc" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "DB:INSERT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="c4ecc74f-c224-4466-b52b-6ca8606c0ca6" name="logging-before-request-Flow"/>
+		
 		<db:insert doc:name="Insert" doc:id="a4df34de-b618-488f-a64f-4ac351fb938e" autoGenerateKeys="true" config-ref="Database_Config">
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.parameters]]]></db:input-parameters>
@@ -66,18 +166,118 @@ output application/json
 				<db:auto-generated-keys-column-name value='#[if(vars.query contains "account") "account_id" else "job_id"]' />
 			</db:auto-generated-keys-column-names>
 		</db:insert>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="71c05cf1-0db0-4178-9a81-2380cbbc6836" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "CREATE PRODUCT RECORD",
+	"resourcePath" : "DB:INSERT",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="fe42b53f-cd42-4a74-8b72-9544aa230bd1" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="product-database-utils-update-Sub_Flow" doc:id="6486d1d9-24e2-4995-a5db-85a38b07a96d" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="e46640a4-4185-46fc-b3da-830f30a01243" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE PRODUCT RECORD",
+	"resourcePath" : "DB:UPDATE",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="4640bf79-5c4f-4578-8ad8-c0e5efcaa80a" name="logging-before-request-Flow"/>
+		
 		<db:bulk-update doc:name="Bulk update" doc:id="135ed699-8ebe-4782-9c86-d32ad8094983" config-ref="Database_Config">
 			<db:bulk-input-parameters ><![CDATA[#[vars.parameters]]]></db:bulk-input-parameters>
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 		</db:bulk-update>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="c15015f4-5e68-45b7-9155-221101ce9ba4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "UPDATE PRODUCT RECORD",
+	"resourcePath" : "DB:UPDATE",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="a164a29d-b305-49cf-9d22-5eafd3b77c4c" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<sub-flow name="product-database-utils-delete-Sub_Flow" doc:id="8ff340e3-d2cd-4caf-9354-6cfa4a8471e0" >
+		<ee:transform doc:name="prepLoggingVariables" doc:id="695f8fb3-1b8b-4de3-8bf4-516e4b41bb43" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE PRODUCT RECORD",
+	"resourcePath" : "DB:DELETE",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-before-request-Flow" doc:id="a571b302-9c9d-4add-ba21-197674d690c5" name="logging-before-request-Flow"/>
+		
 		<db:bulk-delete doc:name="Bulk delete" doc:id="70ab90a1-e978-4eea-93c9-5cda3dab6fb3" config-ref="Database_Config">
 			<db:bulk-input-parameters ><![CDATA[#[vars.parameters]]]></db:bulk-input-parameters>
 			<db:sql ><![CDATA[#[vars.query]]]></db:sql>
 		</db:bulk-delete>
+		<ee:transform doc:name="prepLoggingVariables" doc:id="5ef7ba86-225b-4312-8e06-393aba0f21e5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logVariable" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+
+	message: "DELETE PRODUCT RECORD",
+	"resourcePath" : "DB:DELETE",
+	keyFields: {
+		query: vars.query
+	},
+	info: {}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logging-afterRequest-Flow" doc:id="c167cb17-238c-4aad-be8e-c5db6ab95805" name="logging-afterRequest-Flow"/>
+		
 	</sub-flow>
 	<flow name="product-database-utilsFlow1" doc:id="96bdf63b-33e4-4844-a622-8deaf0f52def" >
 		<http:listener doc:name="Listener" doc:id="d604769c-98f7-40bd-926e-eec2e863b9be" config-ref="sales-products-sapi-httpListenerConfig" path="/batch" allowedMethods="GET"/>

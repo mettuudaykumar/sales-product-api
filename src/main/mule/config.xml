@@ -26,6 +26,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
    <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="3e4b1709-f1e2-4951-ad41-6600406f012b" >
 		<salesforce:basic-connection username="mettu.udaykumar@gmail.com" password="Salesforce@1995" securityToken="riQbmDzoky4suWKmNItIWpAq" />
 	</salesforce:sfdc-config>
+	<configuration doc:name="Configuration" doc:id="216605c6-ef06-4e99-9fc3-89cba697aac4" defaultErrorHandler-ref="error-handlingError_Handler" />
 	
 
 </mule>

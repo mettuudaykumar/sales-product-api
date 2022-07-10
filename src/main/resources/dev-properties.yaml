@@ -33,3 +33,5 @@ sales:
   insertStatement: ""
   deleteStatement: ""
   pageSize: "10"
+printPayload: "Y"
+appName: "sales-product-api"

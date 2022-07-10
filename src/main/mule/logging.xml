@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="logging-start-Flow" doc:id="d78e2cd5-db9a-44e8-9806-ed08b31b7aee" >
+		<ee:transform doc:name="prepLogPayload" doc:id="4563e1e5-af21-4440-8b1c-9070a86271cd" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "START",
+	message: vars.logVariable.message,
+	"resourcePath" : vars.logVariable.resourcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e61e9bbc-1b14-45d9-bec6-88e68c4284ff" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="240e6693-0a82-4d73-8f22-455593cd35a4" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="1e55b228-40d7-43cb-9041-ab63034a0123" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	</flow>
+	<flow name="logging-end-Flow" doc:id="904268bf-d1f8-4f46-8f1e-4d697ac6659d" >
+		<ee:transform doc:name="prepLogPayload" doc:id="a9f5af31-7bfb-40e5-ba45-1d402d84c907" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "END",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="9d9bd059-49fa-4b6a-aedc-809c2126bb33" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="60ea0016-2896-40dc-9255-c4ff94f6c90b" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="11ae1192-7189-4b63-8b68-27f7d3de7027" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-before-request-Flow" doc:id="cf722938-1f78-43ce-9aae-e82825cbefe2" >
+		<ee:transform doc:name="prepLogPayload" doc:id="46d6e1b9-b999-4a77-a0cf-d90a75e8384f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "BEFORE_REQUEST",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8677239c-5e9a-4047-b12a-3e4b9b5a3b89" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="ee51ab39-7561-4041-9700-966df62cb00b" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="f80f0625-843e-4def-a984-9aba43575f00" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-afterRequest-Flow" doc:id="19f8f96d-311a-4832-a1b2-10437f74c210" >
+		<ee:transform doc:name="prepLogPayload" doc:id="8d0a3d47-3865-49f0-a4b7-b57bfdfa5add" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "AFTER_REQUEST",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="61c4f02d-d17d-4464-b9f5-26cf36dc73c4" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="4081072f-93ab-42ee-a106-aea2d1938992" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="acbf7103-f9ef-48d9-9a17-f035756f62c6" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-before-transform-Flow" doc:id="072f348e-9b15-453f-98a7-8448e68e9522" >
+		<ee:transform doc:name="prepLogPayload" doc:id="aad8a2c2-7323-4b8b-a1c4-68aca9967d33" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "BEFORE_TRANSFORM",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="67d1a188-7238-40de-a4ab-0f24a98c40b8" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="57ed9535-3670-40d1-b128-5b3f6c635fb3" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="5533c9ab-ae9e-44f2-8551-1e93b74e26c6" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-after-transform-Flow" doc:id="c685ddf8-728a-401e-af9f-bd871c308907" >
+		<ee:transform doc:name="prepLogPayload" doc:id="7ecb0115-c5b9-49a2-9f12-3d59e20b1ae5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "AFTER_TRANSFORM",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="da61ec7d-080e-481c-af0a-3256477ebe05" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="08cdb18c-bafa-4d9a-aa5c-be6fc255786f" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="884eac48-0348-4327-a82c-146f9d4dd202" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-trace-step-Flow" doc:id="dc926f47-dab7-4491-95d5-5501755a85c6" >
+		<ee:transform doc:name="prepLogPayload" doc:id="19750760-50df-445a-b6ce-3319c63dbd0c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "TRACE_POINT",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ) if(p("secure::printPayload")=="Y"),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f4cee48f-7898-4fda-94d7-fa7945fe0d29" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="fbe2436b-c009-4253-a43a-ae847771088e" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="4590bdb2-fb24-4a9b-bdb5-eea7a20f6adc" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+	<flow name="logging-exception-Flow" doc:id="0b73bce8-a8db-4b3f-9e95-8c440f4332b8" >
+		<ee:transform doc:name="prepLogPayload" doc:id="03ae25b2-241a-4432-861a-2214f41e6db3" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="logPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	tracePoint: "EXCEPTION",
+	message: vars.logVariable.message,
+	"resporcePath" : vars.logVariable.resporcePath,
+	keyFields: vars.logVariable.keyFields,
+	(currentPayload:  (write(payload,"application/json")) ),
+	"correlationId" : correlationId,
+	appName: p("secure::appName"),
+	timeStamp: now(),
+	info: vars.logVariable.info
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="ERROR" doc:name="Logger" doc:id="623980bd-8cf0-4bc9-8f58-ace810d0fd32" message="#[vars.logPayload]"/>
+		<remove-variable doc:name="Remove Variable" doc:id="3f02a1bd-79b1-4ebe-8817-5ff72cd605a0" variableName="logPayload"/>
+		<remove-variable doc:name="Remove Variable" doc:id="c47d5fbf-52d2-4015-9f02-5dc535413c33" variableName="logVariable"/>
+		<error-handler ref="logging-framework-error-handlingError_Handler" />
+	
+	</flow>
+</mule>
